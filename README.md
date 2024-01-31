@@ -10,7 +10,7 @@ This assignment involves a three-step data processing workflow using Apache Airf
 
 ## Visual Representation
 
-*Insert an image here that visually represents the workflow.*
+![](misc/visual_repr.png)
 
 ## Scraping URL for Links
 
