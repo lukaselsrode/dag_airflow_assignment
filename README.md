@@ -10,7 +10,7 @@ IMAGE GOES HERE
 ### Scraping URL for links
 I initially wanted to use the requests library or the bs4 library to scrape the URLs, however I realized that 
 the webpage was bundled using webpack, so I decided to use Selenium instead to load the webpage, and extract the necessary links 
-from the generated the XML content. I manually inspected the elements of the links under the '<h3>Buisiness</h3>' Header element
+from the generated the XML content. I manually inspected the elements of the links under the 'Buisiness' Header element
 ### Dowloading and Uploaing links into a DataStore : GCS
 Initially I was staging files on my local machine in the tmp/ directory, however I realized that this was a sub-optimal solution, given that 
 I was writing a file locally to be uploaded anyway. I decided instead to use an IO steam,  writing the content of the dowload url to a file buffer, and uploaing that content directly to GCS, where it could be officially 'stored'. I made this decision as given any potential issues with the table in BigQuery, than the file can be inspected manually from GCS. 
