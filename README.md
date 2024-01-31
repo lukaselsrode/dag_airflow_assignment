@@ -58,8 +58,6 @@ Execution requires access to the Google Cloud `nz_business` project. Create a se
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../.secrete.json" # path to your google service account credentials
 ```
 ### Execution 
-#### Demo
-PUT VIDEO/GIF HERE
 #### From Python
 To execute the ingestion pipeline from the command line, 
 make sure you remove the un-comment section of code in the /dag/nz_buisiness_pipeline.py folder. This was commented out to test the 
