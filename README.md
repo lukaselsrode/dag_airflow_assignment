@@ -1,39 +1,59 @@
 # DAG Airflow Assignment
-### Overview
-The Program involves 3 main components:
- 1. Scraping the url provided for the links to download
- 2. storing the download in a GCS bucket to serve as a staging area
-    2'. Handle Exceptions of data in staging area locally 
- 3. Ingesting the staged data into BigQuery from the GCS bucket. 
-### Visual Representation
-IMAGE GOES HERE
-### Scraping URL for links
-I initially wanted to use the requests library or the bs4 library to scrape the URLs, however I realized that 
-the webpage was bundled using webpack, so I decided to use Selenium instead to load the webpage, and extract the necessary links 
-from the generated the XML content. I manually inspected the elements of the links under the 'Buisiness' Header element
-### Dowloading and Uploaing links into a DataStore : GCS
-Initially I was staging files on my local machine in the tmp/ directory, however I realized that this was a sub-optimal solution, given that 
-I was writing a file locally to be uploaded anyway. I decided instead to use an IO steam,  writing the content of the dowload url to a file buffer, and uploaing that content directly to GCS, where it could be officially 'stored'. I made this decision as given any potential issues with the table in BigQuery, than the file can be inspected manually from GCS. 
-### Ingesting Links to BigQuery from GCS
-I initally was storing the downloaded gcs links as a compressed .gz file, as I had read up that BigQuery is automatically configured to handle the .gz file format for ingestion. However, I realized that some of the links were not only .zip or .csv files but also .xlsx files, and that some of the schemas for certain tables could not be accurately infered by the BigQuery.JobConfig() class. As such I needed to implement two ways to handle these exceptions. Handling expections was done by downloading the dataset from GCS, either converting the file to a .csv format and replacing the existing file in GCS or manually gernerating the table schema for the BigQuery Loader. 
-## Run Program
-### Install
+
+## Overview
+
+This assignment involves a three-step data processing workflow using Apache Airflow:
+
+1. **Scraping URLs**: Download links are extracted from the provided URL.
+2. **Data Staging**: Downloads are stored in a Google Cloud Storage (GCS) bucket, which serves as a staging area. Additionally, there's a potential to handle exceptions for data in the staging area locally.
+3. **Data Ingestion**: The staged data is ingested into BigQuery from the GCS bucket.
+
+## Visual Representation
+
+*Insert an image here that visually represents the workflow.*
+
+## Scraping URL for Links
+
+Initially, the plan was to use the `requests` or `BeautifulSoup` (bs4) libraries for URL scraping. However, due to the webpage's dynamic content loaded with webpack, Selenium was chosen to render the webpage and extract necessary links from the XML content. The links under the 'Business' header were manually inspected and selected.
+
+## Downloading and Uploading Links into DataStore (GCS)
+
+The initial approach was to stage files locally in the `tmp/` directory. This was later deemed inefficient since the files were meant to be uploaded eventually. A shift was made to use an IO stream, allowing the content from the download URLs to be written directly to a file buffer and uploaded to GCS. This decision was influenced by the need to manually inspect files in GCS should issues arise with the BigQuery table.
+
+## Ingesting Links to BigQuery from GCS
+
+The initial strategy involved storing downloaded GCS links as compressed `.gz` files, considering BigQuery's native support for this format. However, the discovery of various file formats like `.zip`, `.csv`, and `.xlsx`, and the occasional inability of BigQuery's `JobConfig()` to infer schemas correctly, necessitated a dual approach to handle exceptions. This involved either converting files to `.csv` format before replacing them in GCS or manually creating table schemas for BigQuery ingestion.
+
+## Running the Program
+
+### Installation
+
+Clone the repository and navigate into the project directory:
+
+
 ```bash
 git clone https://github.com/lukaselsrode/dag_airflow_assignment.git
 cd dag_airflow_assignment
 ```
-#### Setup Environment & Dependencies
+
+### Setting Up the Environment and Dependencies
+
+Create and activate a virtual environment, then install the required dependencies:
+
 ```bash
 python3 -m venv .env/ 
 source .env/bin/activate
 pip install --upgrade pip  # airflow dependencies can be annoying
 pip install -r requirements.txt
 ```
-#### Selenium Chrome Driver Requirement
-this script uses the Selenium library and the Chrome driver, make sure that you have installed and configured the Chrom webdriver: https://sites.google.com/chromium.org/driver/
-#### Google Service Account Secret JSON file 
-The execution of the script requires acces to the Google Cloud nz_business project, create a service account for the project and download the secret JSON file
-for the service account place it somewhere in your project directory and alter this line of code in /dag/nz_buisiness_pipeline.py to refrence that secret file. 
+
+### Selenium Chrome Driver Requirement
+
+This script utilizes Selenium and requires the Chrome Driver. Ensure the Chrome Driver is installed and configured: [Chrome WebDriver](https://sites.google.com/chromium.org/driver/).
+
+### Google Service Account Secret JSON File
+
+Execution requires access to the Google Cloud `nz_business` project. Create a service account, download the secret JSON file, and place it in your project directory. Update the following line in `/dag/nz_business_pipeline.py` to reference your service account credentials:
 ```python 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../.secrete.json" # path to your google service account credentials
 ```
@@ -54,6 +74,11 @@ if __name__ == "__main__":
     main()
 """
 ```
+You can now directly execute the ingestion pipeline from the command line with. 
+
+```bash 
+cd dags
+python3 nz_business_pipeline.py
+```
 #### From Airflow
-I messed around with configuring the docker-compose.yml file, and tried setting up a webserver to test this but ultimately found that the airflowctl project was a good resource for testing this project locally, although note that the virtual environment will need to be re-configured for testing the code this way. 
-https://github.com/kaxil/airflowctl
+While experimenting with `docker-compose.yml` and attempting to set up a webserver, it was found that the `airflowctl` project provided a viable means for local testing. Note that the virtual environment may need reconfiguration for this testing method: [airflowctl GitHub Repository](https://github.com/kaxil/airflowctl).
